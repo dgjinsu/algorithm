@@ -1,4 +1,5 @@
 import sys
+sys.setrecursionlimit(10**9)        # recur 횟수
 
 n, m, r = map(int, sys.stdin.readline().split())
 graph = [[] for _ in range(n+1)]
