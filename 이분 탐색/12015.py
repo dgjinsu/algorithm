@@ -1,15 +1,20 @@
 import sys
 from collections import deque
 from bisect import bisect_left
-
 input = sys.stdin.readline
-
 n = int(input())
-
 a = list(map(int, input().split()))
-
 lis = []
 lis.append(a[0])
+# bisect 사용
+for i in a:
+    if lis[-1] < i:
+        lis.append(i)
+        continue
+    index = bisect_left(lis, i)
+    lis[index] = i
+print(len(lis))
+
 # for i in a:
 #     left, right = 0, len(lis) - 1
 #     if lis[-1] < i:
@@ -25,11 +30,3 @@ lis.append(a[0])
 
 # print(len(lis))
 
-# bisect 사용
-for i in a:
-    if lis[-1] < i:
-        lis.append(i)
-        continue
-    index = bisect_left(lis, i)
-    lis[index] = i
-print(len(lis))
