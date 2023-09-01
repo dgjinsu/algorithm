@@ -12,7 +12,6 @@ for idx, i in enumerate(num):
     sum += i
     num_sum[idx + 1] = sum
 
-print(num_sum)
 for _ in range(m):
     a, b = map(int, input().split())
     print(num_sum[b] - num_sum[a - 1])
