@@ -25,7 +25,6 @@ def sol(check, a, b):
           tmpB += 1
   return min(tmpW, tmpB)
 
-
 for i in range(n - 7):
   for j in range(m - 7):
     first = arr[i][j] #first = W
