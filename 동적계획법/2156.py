@@ -2,7 +2,7 @@ import sys
 input = sys.stdin.readline
 
 n = int(input())
-dp = [0] * n
+dp = [0] * 10000
 drinks = [0] * 10000
 for i in range(n):
   drinks[i] = int(input())
@@ -17,4 +17,4 @@ for i in range(3, n):
   c = dp[i-1] # 안 마심
   dp[i] = max(a,b,c)
 
-print(dp)
+print(max(dp))
