@@ -25,9 +25,6 @@ for i in range(n-2, -1, -1):
         tmp = dp2[j] + 1
   dp2[i] = tmp
 
-print(dp1)
-print(dp2)
-
 answer = 0
 for i in range(n):
   tmp = dp1[i] + dp2[i]
