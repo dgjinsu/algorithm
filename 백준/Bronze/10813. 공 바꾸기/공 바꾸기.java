@@ -6,33 +6,58 @@ import java.util.StringTokenizer;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException {
-        BufferedReader bf = new BufferedReader(new InputStreamReader(System.in));
-        StringTokenizer st = new StringTokenizer(bf.readLine());
-        int n = Integer.parseInt(st.nextToken());
-        int m = Integer.parseInt(st.nextToken());
-        int[] arr = new int[n + 1];
+    static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+    static StringBuilder sb = new StringBuilder();
+    static StringTokenizer st;
+    static Bucket[] buckets;
 
-        for (int i = 1; i <= n; i++) {
-            arr[i] = i;
+    static StringTokenizer getSt() throws IOException {
+        return new StringTokenizer(br.readLine());
+    }
+
+    public static class Bucket {
+
+        private int ballNumber;
+
+        public Bucket(int ballNumber) {
+            this.ballNumber = ballNumber;
         }
 
-        for (int i = 0; i<m; i++) {
-            st = new StringTokenizer(bf.readLine());
-            int a = Integer.parseInt(st.nextToken());
-            int b = Integer.parseInt(st.nextToken());
-
-            swap(arr, a, b); // 값 교환
+        public void exchangeBallNumber(Bucket targetBucket) {
+            int tmp = ballNumber;
+            ballNumber = targetBucket.ballNumber;
+            targetBucket.ballNumber = tmp;
         }
 
-        for (int i = 1; i <= n; i++) {
-            System.out.print(arr[i] + " ");
+        @Override
+        public String toString() {
+            return String.valueOf(ballNumber);
         }
     }
 
-    private static void swap(int[] arr, int a, int b) {
-        int temp = arr[a];
-        arr[a] = arr[b];
-        arr[b] = temp;
+    public static void main(String[] args) throws IOException {
+        st = getSt();
+        int n = Integer.parseInt(st.nextToken());
+        int m = Integer.parseInt(st.nextToken());
+        buckets = new Bucket[n + 1];
+
+        for (int i = 1; i <= n; i++) {
+            buckets[i] = new Bucket(i);
+        }
+
+        while (m-- > 0) {
+            st = getSt();
+
+            Bucket firstBucket = buckets[Integer.parseInt(st.nextToken())];
+            Bucket secondBucket = buckets[Integer.parseInt(st.nextToken())];
+
+            firstBucket.exchangeBallNumber(secondBucket);
+        }
+
+        Arrays.stream(buckets)
+                .skip(1)
+                .forEach(bucket -> sb.append(bucket.toString()).append(" "));
+
+        System.out.println(sb);
     }
 }
