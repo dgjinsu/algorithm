@@ -48,10 +48,10 @@ public class Main {
         while (m-- > 0) {
             st = getSt();
 
-            Bucket firstBucket = buckets[Integer.parseInt(st.nextToken())];
-            Bucket secondBucket = buckets[Integer.parseInt(st.nextToken())];
+            Bucket sourceBucket = buckets[Integer.parseInt(st.nextToken())];
+            Bucket targeBucket = buckets[Integer.parseInt(st.nextToken())];
 
-            firstBucket.exchangeBallNumber(secondBucket);
+            sourceBucket.exchangeBallNumber(targeBucket);
         }
 
         Arrays.stream(buckets)
