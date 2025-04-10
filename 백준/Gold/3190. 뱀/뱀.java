@@ -8,105 +8,193 @@ public class Main {
     static int n; // 보드 크기
     static int k; // 사과 개수
     static int l; // 변환 정보 개수
-    static int[][] board;
-    static int direction = 1; // 위:0 오른쪽:1 아래:2 왼쪽:3
-    static char commandDirection;
-    static int time = 0;
-    static int turnTime;
-    static Queue<int[]> snake = new LinkedList<>();
-    static Map<Integer, Character> commands = new HashMap<>();
-    static int headX = 0;
-    static int headY = 0;
 
     static StringTokenizer getSt() throws IOException {
         return new StringTokenizer(br.readLine());
     }
 
+    enum Direction {
+        UP(-1, 0), RIGHT(0, 1), DOWN(1, 0), LEFT(0, -1);
+
+        private int dx;
+        private int dy;
+
+        Direction(int dx, int dy) {
+            this.dx = dx;
+            this.dy = dy;
+        }
+
+        public int dx() {
+            return dx;
+        }
+
+        public int dy() {
+            return dy;
+        }
+
+        public Direction getNextDirection(char directionCommand) {
+            if (directionCommand == 'D') {
+                return values()[(this.ordinal() + 1) % 4];
+            } else if (directionCommand == 'L') {
+                return values()[(this.ordinal() + 3) % 4];
+            }
+            return this;
+        }
+    }
+
+    static class Coord {
+        private int x;
+        private int y;
+
+        public Coord(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (!(obj instanceof Coord)) return false;
+            Coord other = (Coord) obj;
+            return this.x == other.x && this.y == other.y;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(x, y);
+        }
+
+        public int getX() {
+            return x;
+        }
+
+        public int getY() {
+            return y;
+        }
+    }
+
+    static class Board {
+        private Set<Coord> appleCoords;
+        private int size;
+
+        public Board(Set<Coord> appleCoords, int size) {
+            this.appleCoords = appleCoords;
+            this.size = size;
+        }
+    }
+
+    static class Snake {
+        private Coord headCoord = new Coord(1, 1);
+        private Queue<Coord> body = new LinkedList<>();
+        private Direction direction = Direction.RIGHT;
+        private Board board;
+
+        public Snake() {
+            body.add(headCoord);
+        }
+
+        public void registerBoardInfo(Board board) {
+            this.board = board;
+        }
+
+        public void turn(Direction direction) {
+            this.direction = direction;
+        }
+
+        private boolean move() {
+            int headX = headCoord.getX() + direction.dx();
+            int headY = headCoord.getY() + direction.dy();
+
+            this.headCoord = new Coord(headX, headY);
+            body.add(headCoord);
+
+            if (isCollisionWall() || isCollisionBody()) {
+                return true;
+            }
+
+            moveTail();
+
+            return false;
+        }
+
+        private boolean isCollisionWall() {
+            return !(headCoord.getX() >= 1 &&
+                headCoord.getY() >= 1 &&
+                headCoord.getX() <= board.size &&
+                headCoord.getY() <= board.size);
+        }
+
+        private boolean isCollisionBody() {
+            List<Coord> bodyCoordList = new ArrayList<>(body);
+            for (int i = 0; i < bodyCoordList.size() - 1; i++) {
+                Coord c = bodyCoordList.get(i);
+                if (headCoord.equals(c)) return true;
+            }
+            return false;
+        }
+
+        private void moveTail() {
+            if (!board.appleCoords.contains(headCoord)) {
+                body.poll();
+            } else {
+                board.appleCoords.remove(headCoord);
+            }
+        }
+    }
+
+    static class GameServer {
+        private final Map<Integer, Character> commands;
+        private int time = 0;
+        private final Board board;
+        private final Snake snake;
+
+        public GameServer(Map<Integer, Character> commands, Set<Coord> appleCoords, int boardSize) {
+            this.commands = commands;
+            this.board = new Board(appleCoords, boardSize);
+            this.snake = new Snake();
+        }
+
+        public void gameStart() {
+            snake.registerBoardInfo(board);
+
+            while (true) {
+                time++;
+
+                boolean isCollision = snake.move();
+
+                if (isCollision) {
+                    break;
+                }
+
+                if (commands.containsKey(time)) {
+                    char directionCommand = commands.get(time);
+                    snake.turn(snake.direction.getNextDirection(directionCommand));
+                }
+            }
+
+            System.out.println(time);
+        }
+    }
+
     public static void main(String[] args) throws IOException {
+        Set<Coord> appleCoord = new HashSet<>();
+        Map<Integer, Character> commands = new HashMap<>();
+
         n = Integer.parseInt(br.readLine());
         k = Integer.parseInt(br.readLine());
-        board = new int[n][n];
-        snake.add(new int[]{0, 0});
+
         for (int i = 0; i < k; i++) {
             st = getSt();
-            board[Integer.parseInt(st.nextToken()) - 1][Integer.parseInt(st.nextToken()) - 1] = -1;
+            appleCoord.add(new Coord(Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken())));
         }
+
         l = Integer.parseInt(br.readLine());
 
         for (int i = 0; i < l; i++) {
             st = getSt();
-            turnTime = Integer.parseInt(st.nextToken());
-            commandDirection = st.nextToken().charAt(0);
-            commands.put(turnTime, commandDirection);
+            commands.put(Integer.parseInt(st.nextToken()), st.nextToken().charAt(0));
         }
 
-        while (true) {
-            time++;
-
-            // 전진
-            go();
-
-            // 헤드가 벽, 몸통에 박지 않았는지 확인
-            if (isEndOfBoard()) {
-                break;
-            }
-            if (isCrashBody()) {
-                break;
-            }
-
-            // 사과 있는지 확인 후 꼬리 따라오기
-            if (board[headX][headY] != -1) {
-                snake.poll();
-            } else {
-                board[headX][headY] = 0;
-            }
-
-            // 명령 있는지 확인 후 방향 전환
-            if (commands.containsKey(time)) {
-                setDirection(commands.get(time));
-            }
-        }
-
-        System.out.println(time);
-    }
-
-
-    private static boolean isCrashBody() {
-        int tmp = snake.size();
-        for (int i = 0; i < tmp - 1; i++) {
-            int[] body = snake.poll();
-            if (body[0] == headX && body[1] == headY) {
-                return true;
-            }
-            snake.add(body);
-        }
-        snake.add(snake.poll());
-        return false;
-    }
-
-    private static void go() {
-        if (direction == 0) {
-            headX--;
-        } else if (direction == 1) {
-            headY++;
-        } else if (direction == 2) {
-            headX++;
-        } else if (direction == 3) {
-            headY--;
-        }
-
-        snake.add(new int[]{headX, headY});
-    }
-
-    private static boolean isEndOfBoard() {
-        return !(headX >= 0 && headY >= 0 && headX < n && headY < n);
-    }
-
-    private static void setDirection(char c) {
-        if (c == 'D') {
-            direction = (direction + 1) % 4;
-        } else {
-            direction = (direction + 4 - 1) % 4;
-        }
+        new GameServer(commands, appleCoord, n).gameStart();
     }
 }
